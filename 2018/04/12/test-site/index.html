@@ -79,17 +79,19 @@
 
 
 
-<meta name="description" content="Good night">
+<meta name="description" content="Handler是什么?先看官方文档:  A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single thr">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LiZeng">
+<meta property="og:title" content="Android中的异步消息机制--Handler">
 <meta property="og:url" content="http://yoursite.com/2018/04/12/test-site/index.html">
 <meta property="og:site_name" content="LiZeng">
-<meta property="og:description" content="Good night">
+<meta property="og:description" content="Handler是什么?先看官方文档:  A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single thr">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-04-11T16:13:16.040Z">
+<meta property="og:image" content="http://yoursite.com/uploads/handler/zongjie.jpg">
+<meta property="og:updated_time" content="2018-04-15T14:23:05.027Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="LiZeng">
-<meta name="twitter:description" content="Good night">
+<meta name="twitter:title" content="Android中的异步消息机制--Handler">
+<meta name="twitter:description" content="Handler是什么?先看官方文档:  A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single thr">
+<meta name="twitter:image" content="http://yoursite.com/uploads/handler/zongjie.jpg">
 
 
 
@@ -125,7 +127,7 @@
 
 
 
-  <title> | LiZeng</title>
+  <title>Android中的异步消息机制--Handler | LiZeng</title>
   
 
 
@@ -249,7 +251,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline"></h1>
+          <h1 class="post-title" itemprop="name headline">Android中的异步消息机制--Handler</h1>
         
 
         <div class="post-meta">
@@ -299,7 +301,250 @@
       
 
       
-        <p>Good night</p>
+        <p>Handler是什么?先看官方文档:</p>
+<blockquote>
+<p>A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single thread and that thread’s message queue. When you create a new Handler, it is bound to the thread / message queue of the thread that is creating it– from that point on, it will deliver messages and runnables to that message queue and execute them as they come out of the message queue.</p>
+</blockquote>
+<p>蹩脚的英文翻译 ==!:</p>
+<blockquote>
+<p>handler允许你发送和处理消息Message对象与一个线程的{@link messagequeue}相关联的runnable 对象。每个Handler实例实例都与单个线程和该线程的消息队列相关联。<br>当你创建一个新的handler时，它绑定到正在创建它的线程的线程/消息队列 - 从那时开始，它将把messages和可运行消息(runnables)传递到消息队列并在它们出来消息队列时执行它们</p>
+</blockquote>
+<p>简而言之,Handler是Android中一种消息循环处理机制.</p>
+<p>##问题带入<br>我们学习Android时候就知道 只有主线程才能更新UI,在子线程中我们只能通过handler.sendMessage或者runOnUiThread方法达到更新UI的操作,相信大家至少会有两个疑问,1.handler是怎么处理这一过程的;2.为什么非得主线程才能更新UI?</p>
+<p>##问题分析<br>ok,带着我们的疑问去看问题,我们通过handler的用法步骤,从而进一步的探究</p>
+<pre><code>// 代码A
+ private static class MyHandler extends Handler {
+
+    private  WeakReference&lt;MainActivity&gt; mWeakReference;
+
+    public MyHandler(MainActivity mainActivity) {
+        this.mWeakReference = new WeakReference&lt;&gt;(mainActivity);
+    }
+
+    @Override
+    public void handleMessage(Message msg) {
+        int what = msg.what;
+        if(what==1){
+            mWeakReference.get().upData(msg.obj);
+        }
+
+    }
+}
+mHandler = new MyHandler();
+
+new Thread(new Runnable() {
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(500);
+                // do someThing
+                Message message = new Message();
+                message.what = 1;
+                mHandler.sendMessage(message);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }).start();
+</code></pre><p>###new Handler()内部做了什么<br>首先我们new了一个handler对象,默认走父类Handler空参构造</p>
+<pre><code>public Handler() {
+    this(null, false);
+}
+ public Handler(Callback callback, boolean async) {
+    // ...
+
+    //①
+    mLooper = Looper.myLooper();
+    if (mLooper == null) {
+        throw new RuntimeException(
+            &quot;Can&apos;t create handler inside thread that has not called Looper.prepare()&quot;);
+    }
+    //②
+    mQueue = mLooper.mQueue;
+    mCallback = callback;
+    mAsynchronous = async;
+}
+</code></pre><p>这里一个Looper类的静态方法myLooper()的得到looper对象,是空的话就抛异常–&gt;不能在没有调用looper.prepare（）的线程中创建handler.</p>
+<pre><code>①
+/**
+ * Return the Looper object associated with the current thread.  Returns
+ * null if the calling thread is not associated with a Looper.
+ * 返回当前线程相关联的Looper对象,如果调此方法的线程没有相关联的Looper
+ */
+public static @Nullable Looper myLooper() {
+    return sThreadLocal.get();
+}
+</code></pre><p>我们接下来看看Looper类,looper通过ThreadLocal.get()获取,(每个线程都有一个ThreadLocal variables,暂时理解为一个线程本地变量,这里不展开讲了,大家有兴趣研究一下),我们看一下looper在哪里set到threadLocal里的,好像前面myLooper()方法得到null的对象时有说没调用Looper.prepare(),应该这里就是赋值的地方了,</p>
+<pre><code>public static void prepare() {
+    prepare(true);
+}
+
+private static void prepare(boolean quitAllowed) {
+    if (sThreadLocal.get() != null) {
+        throw new RuntimeException(&quot;Only one Looper may be created per thread&quot;);
+    }
+    sThreadLocal.set(new Looper(quitAllowed));
+}
+</code></pre><p>looper的构造函数私有化并实例化了消息队列MessageQueue</p>
+<pre><code>private Looper(boolean quitAllowed) {
+    mQueue = new MessageQueue(quitAllowed);
+    mThread = Thread.currentThread();
+}
+</code></pre><p>这里估计又要问候下f*** source code,我们回顾下代码A并没有调用prepare()或者prepare(boolean quitAllowed),但使用时并没有抛异常呢,必定其他地方有调用了, looper类里搜一下prepare,发现</p>
+<pre><code>/**
+ * Initialize the current thread as a looper, marking it as an
+ * application&apos;s main looper. The main looper for your application
+ * is created by the Android environment, so you should never need
+ * to call this function yourself.  See also: {@link #prepare()}
+ */
+public static void prepareMainLooper() {
+    prepare(false);
+    synchronized (Looper.class) {
+        if (sMainLooper != null) {
+            throw new IllegalStateException(&quot;The main Looper has already been prepared.&quot;);
+        }
+        sMainLooper = myLooper();
+    }
+}
+</code></pre><p>发现这个方法有两个地方ActivityThread类的main()方法以及SystemServer类(选择性忽略,待研究…滑稽脸.jpg)调用到</p>
+<pre><code>public static void main(String[] args) {
+   // ...
+
+    Looper.prepareMainLooper();
+
+    if (sMainThreadHandler == null) {
+        // 这里得到handler
+        sMainThreadHandler = thread.getHandler();
+    }
+
+    if (false) {
+        Looper.myLooper().setMessageLogging(new
+                LogPrinter(Log.DEBUG, &quot;ActivityThread&quot;));
+    }
+
+    // ...
+    Looper.loop();
+    //...
+}
+</code></pre><p>原来我们的应用创建时就在主线程就创建好了looper,接下来调用了loop()方法</p>
+<pre><code> /**
+ * Run the message queue in this thread. Be sure to call
+ * {@link #quit()} to end the loop. 
+ * BTW 退出应用时会调用此方法
+ */
+public static void loop() {
+    final Looper me = myLooper();
+    if (me == null) {
+        throw new RuntimeException(&quot;No Looper; Looper.prepare() wasn&apos;t called on this thread.&quot;);
+    }
+    final MessageQueue queue = me.mQueue;
+
+    // ...
+    // 无限循环
+    for (;;) {
+        // 划重点,从消息队列中取出消息
+        Message msg = queue.next(); // might block
+        if (msg == null) {
+            // No message indicates that the message queue is quitting.
+            return;
+        }
+
+        // ...
+        try {
+            // 划重点,分发消息
+            msg.target.dispatchMessage(msg);
+        } finally {
+            if (traceTag != 0) {
+                Trace.traceEnd(traceTag);
+            }
+        }
+
+        if (logging != null) {
+            logging.println(&quot;&lt;&lt;&lt;&lt;&lt; Finished to &quot; + msg.target + &quot; &quot; + msg.callback);
+        }
+
+        // Make sure that during the course of dispatching the
+        // identity of the thread wasn&apos;t corrupted.
+        final long newIdent = Binder.clearCallingIdentity();
+        if (ident != newIdent) {
+            Log.wtf(TAG, &quot;Thread identity changed from 0x&quot;
+                    + Long.toHexString(ident) + &quot; to 0x&quot;
+                    + Long.toHexString(newIdent) + &quot; while dispatching to &quot;
+                    + msg.target.getClass().getName() + &quot; &quot;
+                    + msg.callback + &quot; what=&quot; + msg.what);
+        }
+
+        msg.recycleUnchecked();
+    }
+}
+</code></pre><p>###handler.sendMessage()又做了些什么<br>handler实例调用sendMessage()</p>
+<pre><code> public final boolean sendMessage(Message msg){
+    return sendMessageDelayed(msg, 0);
+}
+</code></pre><p>最终调用了:sendMessageAtTime()</p>
+<pre><code>public boolean sendMessageAtTime(Message msg, long uptimeMillis) {
+    MessageQueue queue = mQueue;
+    if (queue == null) {
+        RuntimeException e = new RuntimeException(
+                this + &quot; sendMessageAtTime() called with no mQueue&quot;);
+        Log.w(&quot;Looper&quot;, e.getMessage(), e);
+        return false;
+    }
+    return enqueueMessage(queue, msg, uptimeMillis);
+}
+private boolean enqueueMessage(MessageQueue queue, Message msg, long uptimeMillis) {
+    msg.target = this;
+    if (mAsynchronous) {
+        msg.setAsynchronous(true);
+    }
+    return queue.enqueueMessage(msg, uptimeMillis);
+}
+</code></pre><p>将消息放入消息队列中,looper中loop()方法,轮询去消息队列取消息messagequeue.next(),假若消息不为空,将此消息派发下去 msg.target.dispatchMessage(msg)(target即当前handler对象);</p>
+<pre><code> /**
+ * Handle system messages here.
+ */
+public void dispatchMessage(Message msg) {
+    if (msg.callback != null) {
+
+        // callback 来自handler.post(Runnable r)
+        handleCallback(msg);
+    } else {
+        // handler构造函数 传的callback
+
+        if (mCallback != null) {
+            if (mCallback.handleMessage(msg)) {
+                return;
+            }
+        }
+        // handle 消息 外部重写的方法
+        handleMessage(msg);
+    }
+}
+</code></pre><p>##问题总结<br>说了这么多,问题1其实整个流程可总结为一张图:<img src="/uploads/handler/zongjie.jpg" alt="Handler,Looper,MessageQueue"></p>
+<blockquote>
+<p>原图出处:<a href="https://blog.csdn.net/iispring/article/details/47180325" target="_blank" rel="noopener">https://blog.csdn.net/iispring/article/details/47180325</a>,仅作学习交流,如有侵权,马上删除<br>问题二:问题二的答案显而易见了</p>
+</blockquote>
+<pre><code>class LooperThread extends Thread {
+   public Handler mHandler;
+
+   public void run() {
+   Looper.prepare();
+
+   mHandler = new Handler() {
+       public void handleMessage(Message msg) {
+           // process incoming messages here
+           // update UI 完全OK的
+       }
+   };
+
+    Looper.loop();
+ }
+  }
+</code></pre><p>这样用看起来好像是OK的,但不知道大家注意到loop()方法的注释没有</p>
+<blockquote>
+<p>Run the message queue in this thread. Be sure to call<br>  {@link #quit()} to end the loop. </p>
+</blockquote>
+<p>需要回调quit(),目的是可以达到,但这样处理还是不妥的.</p>
 
       
     </div>
