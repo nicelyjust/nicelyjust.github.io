@@ -79,19 +79,19 @@
 
 
 
-<meta name="description" content="Handler是什么?先看官方文档说明:  A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single t">
+<meta name="description" content="Handler是什么?先看官方文档:  A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single thr">
 <meta name="keywords" content="android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android中的异步消息机制--Handler">
 <meta property="og:url" content="http://yoursite.com/2018/04/12/关于handler/index.html">
 <meta property="og:site_name" content="LiZeng">
-<meta property="og:description" content="Handler是什么?先看官方文档说明:  A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single t">
+<meta property="og:description" content="Handler是什么?先看官方文档:  A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single thr">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/uploads/handler/zongjie.jpg">
-<meta property="og:updated_time" content="2018-04-30T04:11:34.861Z">
+<meta property="og:updated_time" content="2018-04-30T08:12:04.785Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android中的异步消息机制--Handler">
-<meta name="twitter:description" content="Handler是什么?先看官方文档说明:  A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single t">
+<meta name="twitter:description" content="Handler是什么?先看官方文档:  A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single thr">
 <meta name="twitter:image" content="http://yoursite.com/uploads/handler/zongjie.jpg">
 
 
@@ -345,7 +345,7 @@
       
 
       
-        <p>Handler是什么?先看官方文档说明:</p>
+        <p>Handler是什么?先看官方文档:</p>
 <blockquote>
 <p>A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single thread and that thread’s message queue. When you create a new Handler, it is bound to the thread / message queue of the thread that is creating it– from that point on, it will deliver messages and runnables to that message queue and execute them as they come out of the message queue.</p>
 </blockquote>
@@ -537,6 +537,7 @@ public static void loop() {
     return enqueueMessage(queue, msg, uptimeMillis);
 }
 private boolean enqueueMessage(MessageQueue queue, Message msg, long uptimeMillis) {
+    // message这时持有了当前handler实例,这也是handler会内存leak
     msg.target = this;
     if (mAsynchronous) {
         msg.setAsynchronous(true);
@@ -566,8 +567,9 @@ public void dispatchMessage(Message msg) {
 }
 </code></pre><h2 id="问题总结"><a href="#问题总结" class="headerlink" title="问题总结"></a>问题总结</h2><p>说了这么多,问题1其实整个流程可总结为一张图:<img src="/uploads/handler/zongjie.jpg" alt="Handler,Looper,MessageQueue"></p>
 <blockquote>
-<p>原图出处:<a href="https://blog.csdn.net/iispring/article/details/47180325" target="_blank" rel="noopener">https://blog.csdn.net/iispring/article/details/47180325</a>,仅作学习交流,如有侵权,马上删除<br>问题二:问题二的答案显而易见了</p>
+<p>原图出处:<a href="https://blog.csdn.net/iispring/article/details/47180325" target="_blank" rel="noopener">https://blog.csdn.net/iispring/article/details/47180325</a></p>
 </blockquote>
+<p>问题二:至于怎么在子线程中更新UI,如果看懂了上面的整个流程,我们只需要仿照主线程操作即可,</p>
 <pre><code>class LooperThread extends Thread {
    public Handler mHandler;
 
@@ -577,18 +579,16 @@ public void dispatchMessage(Message msg) {
    mHandler = new Handler() {
        public void handleMessage(Message msg) {
            // process incoming messages here
-           // update UI 完全OK的
+           // update UI new 一个progressBar
        }
    };
 
-    Looper.loop();
+   Looper.loop();
+   // 发送伪代码
+   mHanler.sendMessage()
  }
   }
-</code></pre><p>这样用看起来好像是OK的,但不知道大家注意到loop()方法的注释没有</p>
-<blockquote>
-<p>Run the message queue in this thread. Be sure to call<br>  {@link #quit()} to end the loop. </p>
-</blockquote>
-<p>需要回调quit(),目的是可以达到,但这样处理还是不妥的.</p>
+</code></pre><p>这样就可以达到更新UI的,这里我们需要自己去维护loop,其实android中HandlerThread类就是做这个事的,大家有兴趣的可以去看看.</p>
 
       
     </div>
@@ -609,6 +609,24 @@ public void dispatchMessage(Message msg) {
 
     
 
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    lizeng11
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://yoursite.com/2018/04/12/关于handler/" title="Android中的异步消息机制--Handler">http://yoursite.com/2018/04/12/关于handler/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
     
 
     <footer class="post-footer">

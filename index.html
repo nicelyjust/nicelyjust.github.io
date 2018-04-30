@@ -346,7 +346,7 @@
       
         
           
-            <p>Handler是什么?先看官方文档说明:</p>
+            <p>Handler是什么?先看官方文档:</p>
 <blockquote>
 <p>A Handler allows you to send and process {@link Message} and Runnable objects associated with a thread’s {@link MessageQueue}. Each Handler instance is associated with a single thread and that thread’s message queue. When you create a new Handler, it is bound to the thread / message queue of the thread that is creating it– from that point on, it will deliver messages and runnables to that message queue and execute them as they come out of the message queue.</p>
 </blockquote>
@@ -538,6 +538,7 @@ public static void loop() {
     return enqueueMessage(queue, msg, uptimeMillis);
 }
 private boolean enqueueMessage(MessageQueue queue, Message msg, long uptimeMillis) {
+    // message这时持有了当前handler实例,这也是handler会内存leak
     msg.target = this;
     if (mAsynchronous) {
         msg.setAsynchronous(true);
@@ -567,8 +568,9 @@ public void dispatchMessage(Message msg) {
 }
 </code></pre><h2 id="问题总结"><a href="#问题总结" class="headerlink" title="问题总结"></a>问题总结</h2><p>说了这么多,问题1其实整个流程可总结为一张图:<img src="/uploads/handler/zongjie.jpg" alt="Handler,Looper,MessageQueue"></p>
 <blockquote>
-<p>原图出处:<a href="https://blog.csdn.net/iispring/article/details/47180325" target="_blank" rel="noopener">https://blog.csdn.net/iispring/article/details/47180325</a>,仅作学习交流,如有侵权,马上删除<br>问题二:问题二的答案显而易见了</p>
+<p>原图出处:<a href="https://blog.csdn.net/iispring/article/details/47180325" target="_blank" rel="noopener">https://blog.csdn.net/iispring/article/details/47180325</a></p>
 </blockquote>
+<p>问题二:至于怎么在子线程中更新UI,如果看懂了上面的整个流程,我们只需要仿照主线程操作即可,</p>
 <pre><code>class LooperThread extends Thread {
    public Handler mHandler;
 
@@ -578,18 +580,16 @@ public void dispatchMessage(Message msg) {
    mHandler = new Handler() {
        public void handleMessage(Message msg) {
            // process incoming messages here
-           // update UI 完全OK的
+           // update UI new 一个progressBar
        }
    };
 
-    Looper.loop();
+   Looper.loop();
+   // 发送伪代码
+   mHanler.sendMessage()
  }
   }
-</code></pre><p>这样用看起来好像是OK的,但不知道大家注意到loop()方法的注释没有</p>
-<blockquote>
-<p>Run the message queue in this thread. Be sure to call<br>  {@link #quit()} to end the loop. </p>
-</blockquote>
-<p>需要回调quit(),目的是可以达到,但这样处理还是不妥的.</p>
+</code></pre><p>这样就可以达到更新UI的,这里我们需要自己去维护loop,其实android中HandlerThread类就是做这个事的,大家有兴趣的可以去看看.</p>
 
           
         
