@@ -79,19 +79,19 @@
 
 
 
-<meta name="description" content="###引言java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:  说一下一个类实例化过程? JVM内存是怎么分配的? 说一说JVM垃圾回收机制?">
+<meta name="description" content="引言java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:  说一下一个类实例化过程? JVM内存是怎么分配的? 说一说JVM垃圾回收机制?">
 <meta name="keywords" content="Java">
 <meta property="og:type" content="article">
 <meta property="og:title" content="面试常客-JVM相关知识">
 <meta property="og:url" content="https://nicelyjust.github.io/2018/09/03/内存管理/index.html">
 <meta property="og:site_name" content="LiZeng">
-<meta property="og:description" content="###引言java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:  说一下一个类实例化过程? JVM内存是怎么分配的? 说一说JVM垃圾回收机制?">
+<meta property="og:description" content="引言java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:  说一下一个类实例化过程? JVM内存是怎么分配的? 说一说JVM垃圾回收机制?">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://nicelyjust.github.io/uploads/memory/内存分配.jpg">
-<meta property="og:updated_time" content="2018-09-02T16:05:47.777Z">
+<meta property="og:updated_time" content="2018-09-02T16:11:17.824Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="面试常客-JVM相关知识">
-<meta name="twitter:description" content="###引言java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:  说一下一个类实例化过程? JVM内存是怎么分配的? 说一说JVM垃圾回收机制?">
+<meta name="twitter:description" content="引言java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:  说一下一个类实例化过程? JVM内存是怎么分配的? 说一说JVM垃圾回收机制?">
 <meta name="twitter:image" content="https://nicelyjust.github.io/uploads/memory/内存分配.jpg">
 
 
@@ -355,20 +355,20 @@
       
 
       
-        <p>###引言<br>java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:</p>
+        <h3 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h3><p>java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:</p>
 <ol>
 <li>说一下一个类实例化过程?</li>
 <li>JVM内存是怎么分配的?</li>
 <li>说一说JVM垃圾回收机制?<a id="more"></a>
-###JVM内存分配<br>java虚拟机在执行Java程序过程中会把它所管理的内存划分为若干个数据区域,见下图</li>
+<h3 id="JVM内存分配"><a href="#JVM内存分配" class="headerlink" title="JVM内存分配"></a>JVM内存分配</h3>java虚拟机在执行Java程序过程中会把它所管理的内存划分为若干个数据区域,见下图</li>
 </ol>
 <p><img src="/uploads/memory/内存分配.jpg" alt="JVM运行时数据区"></p>
-<p>####程序计数器<br>这哥们干什么的呢?官方-&gt;字节码解释器通过改变这个计数器的值来选取下一条需要执行的字节码指令,分支、循环、跳转、异常处理、线程恢复等，简而言之，这哥们就是负责字节码执行的顺序的。BTW，多线程的实现是通过线程轮流切换并分配时间片的方式来实现的，为了保证线程切换后恢复到正确的执行位置，每条线程都需要有一个独立的程序计数器，我们称这类内存区域为”线程私有”的内存。</p>
-<p>####虚拟机栈<br>虚拟机栈描述的是Java方法执行的内存模型：每一个方法在执行的同时都会创建一个栈帧(stack frame)用于存储<strong>局部变量表、操作数栈、动态链接、方法出口</strong>等信息.每一个方法从调用直至执行完成的过程,就对应着一个栈帧在虚拟机中入栈到出栈的过程.这里重点介绍下局部变量表部分,局部变量表存放了编译期可知的<strong>各种基本数据类型</strong>(boolean,char,byte,short,int,float,long,double)、<strong>对象引用类型</strong>和returnAddress类型(指向了一条字节码指令的地址).无法申请足够的空间会报OOM.</p>
-<p>####Java堆<br>Java heap是一块相对于比较大的内存,又称”GC堆”,存放的是<strong>所有的对象实例及数组</strong>(JIT编译器的发展与逃逸分析技术逐渐成熟,这里需要打个问号).从内存回收的角度来看,新生代和老年代.再细致一点的有Eden空间、From Survivor空间、To Survivor空间等；从内存分配的角度来看，线程共享的Java堆中可能划分出多个线程私有的分配缓冲区(Thread Local).分配和回收另外介绍.</p>
-<p>####方法区<br>别名Non-Heap(非堆),存储<strong>已被加载的类信息、常量、静态变量</strong>等，相对于而言，GC很少光顾这块而不像Java heap。</p>
-<p>####本地方法栈<br>见名知意，native方法相关的，这个可以不用关心。</p>
-<p>###一个类实例化过程<br>平时我们new对象的可以说是非常开心了，但new一个对象背后JVM做了些什么？</p>
+<h4 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h4><p>这哥们干什么的呢?官方-&gt;字节码解释器通过改变这个计数器的值来选取下一条需要执行的字节码指令,分支、循环、跳转、异常处理、线程恢复等，简而言之，这哥们就是负责字节码执行的顺序的。BTW，多线程的实现是通过线程轮流切换并分配时间片的方式来实现的，为了保证线程切换后恢复到正确的执行位置，每条线程都需要有一个独立的程序计数器，我们称这类内存区域为”线程私有”的内存。</p>
+<h4 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h4><p>虚拟机栈描述的是Java方法执行的内存模型：每一个方法在执行的同时都会创建一个栈帧(stack frame)用于存储<strong>局部变量表、操作数栈、动态链接、方法出口</strong>等信息.每一个方法从调用直至执行完成的过程,就对应着一个栈帧在虚拟机中入栈到出栈的过程.这里重点介绍下局部变量表部分,局部变量表存放了编译期可知的<strong>各种基本数据类型</strong>(boolean,char,byte,short,int,float,long,double)、<strong>对象引用类型</strong>和returnAddress类型(指向了一条字节码指令的地址).无法申请足够的空间会报OOM.</p>
+<h4 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h4><p>Java heap是一块相对于比较大的内存,又称”GC堆”,存放的是<strong>所有的对象实例及数组</strong>(JIT编译器的发展与逃逸分析技术逐渐成熟,这里需要打个问号).从内存回收的角度来看,新生代和老年代.再细致一点的有Eden空间、From Survivor空间、To Survivor空间等；从内存分配的角度来看，线程共享的Java堆中可能划分出多个线程私有的分配缓冲区(Thread Local).分配和回收另外介绍.</p>
+<h4 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h4><p>别名Non-Heap(非堆),存储<strong>已被加载的类信息、常量、静态变量</strong>等，相对于而言，GC很少光顾这块而不像Java heap。</p>
+<h4 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h4><p>见名知意，native方法相关的，这个可以不用关心。</p>
+<h3 id="一个类实例化过程"><a href="#一个类实例化过程" class="headerlink" title="一个类实例化过程"></a>一个类实例化过程</h3><p>平时我们new对象的可以说是非常开心了，但new一个对象背后JVM做了些什么？</p>
 <ol>
 <li>先去常量池寻找是否有此类的符号引用，检查该类是否被加载、解析、初始化过，如果没有就去执行类的加载过程；</li>
 <li>接着去heap分配内存，怎么分配呢？两种，内存平整是指针碰撞方法，否则空闲列表(记录哪块内存是可用的).选择哪种分配模式取决于堆区内存是否规整，而是否规整由该区垃圾收集器是否有压缩整理功能决定，serial、parnew等系统垃圾收集器采用前者，CMS基于Mark-Sweap算法收集器则是空闲列表；</li>
@@ -376,8 +376,7 @@
 <li>接下来，虚拟机要对对象进行必要的设置，例如这个对象是哪个类的实例、如何才能找到类的元数据信息、对象的哈希码、对象的GC分代年龄等信息，这些都存在于对象头中。</li>
 <li>进行＜init＞后，对象字段才初始化</li>
 </ol>
-<p>###说一说内存回收机制</p>
-
+<h3 id="说一说内存回收机制"><a href="#说一说内存回收机制" class="headerlink" title="说一说内存回收机制"></a>说一说内存回收机制</h3>
       
     </div>
     
@@ -494,8 +493,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -559,6 +567,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JVM内存分配"><span class="nav-number">2.</span> <span class="nav-text">JVM内存分配</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#程序计数器"><span class="nav-number">2.1.</span> <span class="nav-text">程序计数器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#虚拟机栈"><span class="nav-number">2.2.</span> <span class="nav-text">虚拟机栈</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Java堆"><span class="nav-number">2.3.</span> <span class="nav-text">Java堆</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方法区"><span class="nav-number">2.4.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#本地方法栈"><span class="nav-number">2.5.</span> <span class="nav-text">本地方法栈</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一个类实例化过程"><span class="nav-number">3.</span> <span class="nav-text">一个类实例化过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#说一说内存回收机制"><span class="nav-number">4.</span> <span class="nav-text">说一说内存回收机制</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
