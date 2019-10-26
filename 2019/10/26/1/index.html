@@ -79,20 +79,20 @@
 
 
 
-<meta name="description" content="引言java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:  说一下一个类实例化过程? JVM内存是怎么分配的? 说一说JVM垃圾回收机制?">
+<meta name="description" content="线程池的优势Android开发中主线程不能执行耗时任务,耗时以及IO操作都需要通过异步来处理：  降低系统资源消耗,通过重用已存在的线程,降低线程创建和销毁造成的消耗; 提高系统的响应速度,当有任务来时,无需等待新线程的创建便能立即执行; 方便线程并发数量的管控以及线程池提供了更强大的功能;">
 <meta name="keywords" content="Java">
 <meta property="og:type" content="article">
-<meta property="og:title" content="面试常客-JVM相关知识">
-<meta property="og:url" content="https://nicelyjust.github.io/2018/09/03/内存管理/index.html">
+<meta property="og:title" content="Java线程池">
+<meta property="og:url" content="https://nicelyjust.github.io/2019/10/26/1/index.html">
 <meta property="og:site_name" content="LiZeng">
-<meta property="og:description" content="引言java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:  说一下一个类实例化过程? JVM内存是怎么分配的? 说一说JVM垃圾回收机制?">
+<meta property="og:description" content="线程池的优势Android开发中主线程不能执行耗时任务,耗时以及IO操作都需要通过异步来处理：  降低系统资源消耗,通过重用已存在的线程,降低线程创建和销毁造成的消耗; 提高系统的响应速度,当有任务来时,无需等待新线程的创建便能立即执行; 方便线程并发数量的管控以及线程池提供了更强大的功能;">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://nicelyjust.github.io/uploads/memory/内存分配.jpg">
-<meta property="og:updated_time" content="2018-09-02T16:11:17.824Z">
+<meta property="og:image" content="https://nicelyjust.github.io/uploads/threadPool.jpg">
+<meta property="og:updated_time" content="2019-10-26T15:56:47.434Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="面试常客-JVM相关知识">
-<meta name="twitter:description" content="引言java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:  说一下一个类实例化过程? JVM内存是怎么分配的? 说一说JVM垃圾回收机制?">
-<meta name="twitter:image" content="https://nicelyjust.github.io/uploads/memory/内存分配.jpg">
+<meta name="twitter:title" content="Java线程池">
+<meta name="twitter:description" content="线程池的优势Android开发中主线程不能执行耗时任务,耗时以及IO操作都需要通过异步来处理：  降低系统资源消耗,通过重用已存在的线程,降低线程创建和销毁造成的消耗; 提高系统的响应速度,当有任务来时,无需等待新线程的创建便能立即执行; 方便线程并发数量的管控以及线程池提供了更强大的功能;">
+<meta name="twitter:image" content="https://nicelyjust.github.io/uploads/threadPool.jpg">
 
 
 
@@ -122,13 +122,13 @@
 
 
 
-  <link rel="canonical" href="https://nicelyjust.github.io/2018/09/03/内存管理/"/>
+  <link rel="canonical" href="https://nicelyjust.github.io/2019/10/26/1/"/>
 
 
 
 
 
-  <title>面试常客-JVM相关知识 | LiZeng</title>
+  <title>Java线程池 | LiZeng</title>
   
 
 
@@ -255,7 +255,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://nicelyjust.github.io/2018/09/03/内存管理/">
+    <link itemprop="mainEntityOfPage" href="https://nicelyjust.github.io/2019/10/26/1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="lizeng11">
@@ -272,7 +272,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">面试常客-JVM相关知识</h1>
+          <h1 class="post-title" itemprop="name headline">Java线程池</h1>
         
 
         <div class="post-meta">
@@ -284,8 +284,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-03T00:06:24+08:00">
-                2018-09-03
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-26T23:21:34+08:00">
+                2019-10-26
               </time>
             
 
@@ -307,8 +307,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index">
-                    <span itemprop="name">Java</span>
+                  <a href="/categories/线程池/" itemprop="url" rel="index">
+                    <span itemprop="name">线程池</span>
                   </a>
                 </span>
 
@@ -324,7 +324,7 @@
 
           
           
-             <span id="/2018/09/03/内存管理/" class="leancloud_visitors" data-flag-title="面试常客-JVM相关知识">
+             <span id="/2019/10/26/1/" class="leancloud_visitors" data-flag-title="Java线程池">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -355,28 +355,83 @@
       
 
       
-        <h3 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h3><p>java宣称：”write once ，run anyWhere！”,JVM(Java visual machine) 表示对此负责.而作为靠Java语言吃饭的我们,面试中被问到关于JVM的相关知识点可谓是常客.这里我简单梳理下如下问题:</p>
+        <h4 id="线程池的优势"><a href="#线程池的优势" class="headerlink" title="线程池的优势"></a>线程池的优势</h4><p>Android开发中主线程不能执行耗时任务,耗时以及IO操作都需要通过异步来处理：</p>
 <ol>
-<li>说一下一个类实例化过程?</li>
-<li>JVM内存是怎么分配的?</li>
-<li>说一说JVM垃圾回收机制?<a id="more"></a>
-<h3 id="JVM内存分配"><a href="#JVM内存分配" class="headerlink" title="JVM内存分配"></a>JVM内存分配</h3>java虚拟机在执行Java程序过程中会把它所管理的内存划分为若干个数据区域,见下图</li>
+<li>降低系统资源消耗,通过重用已存在的线程,降低线程创建和销毁造成的消耗;</li>
+<li>提高系统的响应速度,当有任务来时,无需等待新线程的创建便能立即执行;</li>
+<li>方便线程并发数量的管控以及线程池提供了更强大的功能;</li>
 </ol>
-<p><img src="/uploads/memory/内存分配.jpg" alt="JVM运行时数据区"></p>
-<h4 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h4><p>这哥们干什么的呢?官方-&gt;字节码解释器通过改变这个计数器的值来选取下一条需要执行的字节码指令,分支、循环、跳转、异常处理、线程恢复等，简而言之，这哥们就是负责字节码执行的顺序的。BTW，多线程的实现是通过线程轮流切换并分配时间片的方式来实现的，为了保证线程切换后恢复到正确的执行位置，每条线程都需要有一个独立的程序计数器，我们称这类内存区域为”线程私有”的内存。</p>
-<h4 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h4><p>虚拟机栈描述的是Java方法执行的内存模型：每一个方法在执行的同时都会创建一个栈帧(stack frame)用于存储<strong>局部变量表、操作数栈、动态链接、方法出口</strong>等信息.每一个方法从调用直至执行完成的过程,就对应着一个栈帧在虚拟机中入栈到出栈的过程.这里重点介绍下局部变量表部分,局部变量表存放了编译期可知的<strong>各种基本数据类型</strong>(boolean,char,byte,short,int,float,long,double)、<strong>对象引用类型</strong>和returnAddress类型(指向了一条字节码指令的地址).无法申请足够的空间会报OOM.</p>
-<h4 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h4><p>Java heap是一块相对于比较大的内存,又称”GC堆”,存放的是<strong>所有的对象实例及数组</strong>(JIT编译器的发展与逃逸分析技术逐渐成熟,这里需要打个问号).从内存回收的角度来看,新生代和老年代.再细致一点的有Eden空间、From Survivor空间、To Survivor空间等；从内存分配的角度来看，线程共享的Java堆中可能划分出多个线程私有的分配缓冲区(Thread Local).分配和回收另外介绍.</p>
-<h4 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h4><p>别名Non-Heap(非堆),存储<strong>已被加载的类信息、常量、静态变量</strong>等，相对于而言，GC很少光顾这块而不像Java heap。</p>
-<h4 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h4><p>见名知意，native方法相关的，这个可以不用关心。</p>
-<h3 id="一个类实例化过程"><a href="#一个类实例化过程" class="headerlink" title="一个类实例化过程"></a>一个类实例化过程</h3><p>平时我们new对象的可以说是非常开心了，但new一个对象背后JVM做了些什么？</p>
-<ol>
-<li>先去常量池寻找是否有此类的符号引用，检查该类是否被加载、解析、初始化过，如果没有就去执行类的加载过程；</li>
-<li>接着去heap分配内存，怎么分配呢？两种，内存平整是指针碰撞方法，否则空闲列表(记录哪块内存是可用的).选择哪种分配模式取决于堆区内存是否规整，而是否规整由该区垃圾收集器是否有压缩整理功能决定，serial、parnew等系统垃圾收集器采用前者，CMS基于Mark-Sweap算法收集器则是空闲列表；</li>
-<li>除了考虑如何划分可用空间外，分配对象是一个较频繁的行为，线程安全如何保证？两种方法:本地线程缓冲(Thread Local Allocation Buffer,TLAB)，每个线程在Java堆中申请一块内存.另一种则是CAS，compare and sweap 分配重试，对比版本，再提交。</li>
-<li>接下来，虚拟机要对对象进行必要的设置，例如这个对象是哪个类的实例、如何才能找到类的元数据信息、对象的哈希码、对象的GC分代年龄等信息，这些都存在于对象头中。</li>
-<li>进行＜init＞后，对象字段才初始化</li>
+<a id="more"></a>
+<h4 id="线程池核心类-ThreadPoolExecutor"><a href="#线程池核心类-ThreadPoolExecutor" class="headerlink" title="线程池核心类:ThreadPoolExecutor"></a>线程池核心类:ThreadPoolExecutor</h4><p>我们通过ThreadPoolExecutor来创建一个线程池.</p>
+<pre><code>ExecutorService service = new ThreadPoolExecutor(....);
+ public ThreadPoolExecutor(int corePoolSize,
+     int maximumPoolSize,
+     long keepAliveTime,
+     TimeUnit unit,
+     BlockingQueue&lt;Runnable&gt; workQueue,
+     ThreadFactory threadFactory,
+     RejectedExecutionHandler handler)
+</code></pre><h5 id="ThreadPoolExecutor构造函数参数意义"><a href="#ThreadPoolExecutor构造函数参数意义" class="headerlink" title="ThreadPoolExecutor构造函数参数意义"></a>ThreadPoolExecutor构造函数参数意义</h5><ul>
+<li>corePoolSize:核心线程数,默认情况下核心线程会一直存活在线程池里</li>
+<li>maximumPoolSize:线程池所容纳的最大线程数,核心线程数+非核心线程数</li>
+<li>keepAliveTime:非核心闲置的超时时长</li>
+<li>workQueue:线程池中保存等待执行的任务的阻塞队列</li>
+<li>threadFactory:创建新线程,线程工厂</li>
+<li>handler:异常处理器</li>
+</ul>
+<h4 id="线程池的主要处理流程"><a href="#线程池的主要处理流程" class="headerlink" title="线程池的主要处理流程"></a>线程池的主要处理流程</h4><p><img src="/uploads/threadPool.jpg" alt="线程池的主要处理流程"></p>
+<h4 id="四种线程池类"><a href="#四种线程池类" class="headerlink" title="四种线程池类"></a>四种线程池类</h4><ol>
+<li><p>newFixedThreadPool:全都是核心线程数,处于空闲状态的线程也不会被回收,除非这个线程池被关闭,任务队列也无大小限制</p>
+<pre><code>public static ExecutorService newFixedThreadPool(int nThreads) {
+    return new ThreadPoolExecutor(nThreads, nThreads,
+                                   0L, TimeUnit.MILLISECONDS,
+                                   new LinkedBlockingQueue&lt;Runnable&gt;());
+}
+</code></pre></li>
+<li><p>newCachedThreadPool:无核心线程,限制60s的线程将会被回收,SynchronousQueue相当于一个空集合,意味着过来一个任务将优先复用其次就是新建</p>
+<pre><code>public static ExecutorService newCachedThreadPool() {
+return new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                               60L, TimeUnit.SECONDS,
+                               new SynchronousQueue&lt;Runnable&gt;());
+}
+</code></pre></li>
+<li><p>newScheduledThreadPool:核心线程固定,非核心线程无固定,一旦空闲时就会被回收</p>
+<pre><code>public ScheduledThreadPoolExecutor(int corePoolSize) {
+  super(corePoolSize, Integer.MAX_VALUE, 0, NANOSECONDS,
+        new DelayedWorkQueue());
+}
+// 延迟一段时间执行
+service.schedule(new Runnable() {
+ public void run() {
+
+ }
+}, 3, TimeUnit.SECONDS);
+// 每隔一段时间重复执行
+service.scheduleAtFixedRate(new Runnable() {
+   public void run() {
+   }
+}, 3, 2, TimeUnit.SECONDS);
+</code></pre></li>
+<li><p>newSingleThreadExecutor:只有一个核心线程,任务队列没有限制</p>
+<pre><code>public static ExecutorService newSingleThreadExecutor() {
+  return new FinalizableDelegatedExecutorService
+      (new ThreadPoolExecutor(1, 1,
+                             0L, TimeUnit.MILLISECONDS,
+                             new LinkedBlockingQueue&lt;Runnable&gt;()));
+}
+</code></pre></li>
 </ol>
-<h3 id="说一说内存回收机制"><a href="#说一说内存回收机制" class="headerlink" title="说一说内存回收机制"></a>说一说内存回收机制</h3>
+<h4 id="线程池使用实例"><a href="#线程池使用实例" class="headerlink" title="线程池使用实例"></a>线程池使用实例</h4><p>任务类别可划分为CPU密集型任务、IO密集型任务和混合型任务,CPU密集型任务(相对少的线程个数,如N)无IO密集型任务(相对多的线程个数,如2*N)耗时，下边我们看看大名鼎鼎的OkHttp如何使用的吧：</p>
+<pre><code>//下边是OkHttp源码中线程池创建代码片段，源码版本：3.8.0
+public synchronized ExecutorService executorService() {
+  if (executorService == null) {
+      executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60,   TimeUnit.SECONDS,
+          new SynchronousQueue&lt;Runnable&gt;(), Util.threadFactory(&quot;OkHttp Dispatcher&quot;, false));
+  }
+  return executorService;
+}
+</code></pre><p>这货跟newCachedThreadPool默认的线程池除了线程创建的方式不同外其他都是一致的。</p>
+
       
     </div>
     
@@ -405,7 +460,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://nicelyjust.github.io/2018/09/03/内存管理/" title="面试常客-JVM相关知识">https://nicelyjust.github.io/2018/09/03/内存管理/</a>
+    <a href="https://nicelyjust.github.io/2019/10/26/1/" title="Java线程池">https://nicelyjust.github.io/2019/10/26/1/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -433,8 +488,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/04/12/关于handler/" rel="next" title="Android中的异步消息机制--Handler">
-                <i class="fa fa-chevron-left"></i> Android中的异步消息机制--Handler
+              <a href="/2018/09/03/内存管理/" rel="next" title="面试常客-JVM相关知识">
+                <i class="fa fa-chevron-left"></i> 面试常客-JVM相关知识
               </a>
             
           </div>
@@ -442,10 +497,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2019/10/26/1/" rel="prev" title="Java线程池">
-                Java线程池 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -581,7 +632,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JVM内存分配"><span class="nav-number">2.</span> <span class="nav-text">JVM内存分配</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#程序计数器"><span class="nav-number">2.1.</span> <span class="nav-text">程序计数器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#虚拟机栈"><span class="nav-number">2.2.</span> <span class="nav-text">虚拟机栈</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Java堆"><span class="nav-number">2.3.</span> <span class="nav-text">Java堆</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方法区"><span class="nav-number">2.4.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#本地方法栈"><span class="nav-number">2.5.</span> <span class="nav-text">本地方法栈</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一个类实例化过程"><span class="nav-number">3.</span> <span class="nav-text">一个类实例化过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#说一说内存回收机制"><span class="nav-number">4.</span> <span class="nav-text">说一说内存回收机制</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#线程池的优势"><span class="nav-number">1.</span> <span class="nav-text">线程池的优势</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#线程池核心类-ThreadPoolExecutor"><span class="nav-number">2.</span> <span class="nav-text">线程池核心类:ThreadPoolExecutor</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ThreadPoolExecutor构造函数参数意义"><span class="nav-number">2.1.</span> <span class="nav-text">ThreadPoolExecutor构造函数参数意义</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#线程池的主要处理流程"><span class="nav-number">3.</span> <span class="nav-text">线程池的主要处理流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四种线程池类"><span class="nav-number">4.</span> <span class="nav-text">四种线程池类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#线程池使用实例"><span class="nav-number">5.</span> <span class="nav-text">线程池使用实例</span></a></li></ol></div>
             
 
           </div>
